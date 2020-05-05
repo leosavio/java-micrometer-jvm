@@ -1,16 +1,9 @@
 package com.leosavio.micrometer.metricas;
 
 import com.sun.net.httpserver.HttpServer;
-import io.micrometer.core.instrument.Clock;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
-import io.micrometer.core.instrument.logging.LoggingRegistryConfig;
 import io.micrometer.core.lang.Nullable;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
-import io.micrometer.statsd.StatsdConfig;
-import io.micrometer.statsd.StatsdFlavor;
-import io.micrometer.statsd.StatsdMeterRegistry;
 
 import java.io.*;
 import java.net.InetSocketAddress;

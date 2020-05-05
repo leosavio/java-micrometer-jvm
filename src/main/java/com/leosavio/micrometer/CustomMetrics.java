@@ -1,15 +1,11 @@
 package com.leosavio.micrometer;
 
-import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.binder.BaseUnits;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.micrometer.statsd.StatsdConfig;
-import io.micrometer.statsd.StatsdMeterRegistry;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -24,19 +20,12 @@ public class CustomMetrics {
         // you can format to any output you want
         NumberFormat formatter = new DecimalFormat("0.00");
 
-        StatsdConfig config = new StatsdConfig() {
-
-            @Override
-            public String get(String key) {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-        };
-
         // memoria
         // MeterRegistry registryMem = new SimpleMeterRegistry();
         MeterRegistry registryMem = MetricasRegistro.prometheus();
+        // nome da aplicacao
+        registryMem.config().commonTags("application", "TESTE_MICROMETER");
+
         new JvmMemoryMetrics().bindTo(registryMem);
         Gauge memUsed = registryMem.find("jvm.memory.used").gauge();
         Gauge memUsed2 = registryMem.find("jvm.memory.committed").gauge();
@@ -44,16 +33,25 @@ public class CustomMetrics {
 
         System.out.println("Memory used: " + formatter.format(memUsed.value()));
 
-        MeterRegistry registry = new StatsdMeterRegistry(config, Clock.SYSTEM);
+        // MeterRegistry registry = new StatsdMeterRegistry(config, Clock.SYSTEM);
         // num cpu
         Gauge gaugeCPU = Gauge.builder("system.cpu.count", Runtime.getRuntime(), Runtime::availableProcessors)
-                .description("The number of processors available").baseUnit(BaseUnits.ROWS).register(registry);
+                .description("The number of processors available").baseUnit(BaseUnits.ROWS).register(registryMem);
 
         System.out.println("Num CPU: " + gaugeCPU.value());
 
+        // just for presentation
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        // just for presentation
+
         List<String> list = new ArrayList<>();
 
-        Gauge gaugeList = Gauge.builder("cache.size", list, List::size).register(registry);
+        Gauge gaugeList = Gauge.builder("cache.size", list, List::size).register(registryMem);
 
         System.out.println("Size of List: " + gaugeList.value());
         for (int i = 0; i < 10000; i++) {
@@ -64,8 +62,8 @@ public class CustomMetrics {
 
         // contador loop
         Counter myCounter = Counter.builder("loop.counter.test").description("total_loop")
-                .tags("total_loop", "total_loop.test").register(registry);
-        Metrics.addRegistry(registry);
+                .tags("total_loop", "total_loop.test").register(registryMem);
+        Metrics.addRegistry(registryMem);
         for (int i = 0; i < 50; i++) {
             myCounter.increment();
         }
